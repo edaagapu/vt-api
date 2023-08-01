@@ -29,6 +29,10 @@ def result_format_center(cell):
   if 'Error' in str(cell.value):
     cell.font = Font(color='626262')
     cell.fill = PatternFill(fill_type='solid', start_color="CBCBCB", end_color="CBCBCB")
+  # if 'Warning' in str(cell.value):
+  #   cell.font = Font(color='AC9A00')
+  #   cell.fill = PatternFill(fill_type='solid', start_color="FFF17C", end_color="FFF17C")
+  
 
 
 def format_workbook(ws, rg=None, **rules):

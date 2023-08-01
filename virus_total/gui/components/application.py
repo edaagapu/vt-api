@@ -1,35 +1,36 @@
-from tkinter import Frame, Button, StringVar, messagebox as MessageBox
+from tkinter import Frame, StringVar, IntVar, Label, Text, VERTICAL
 from controller import ApplicationController
-from settings import SettingsView
+from tkinter.ttk import Progressbar, Scrollbar
+
 
 class ApplicationFrame(Frame, ApplicationController):
-  def __init__(self, master=None, *args, **kwargs):
+  def __init__(self, master=None, color='#FFFFFF',  *args, **kwargs):
     super().__init__(master, *args, **kwargs)
     self.master = master
+    self._featuresBars = ( 'Virus Total',  'IBM X-Change' )
     self.create_vars()
-    self.create_widgets()
-    self.place(relwidth=0.98, height=200, relx=0.01, rely=0.01)
+    self.create_widgets(color)
+    self.place(relwidth=0.98, relheight=0.74, relx=0.01, rely=0.01)
 
   def create_vars(self):
-    self.hi = StringVar(self.master, 'Hello World! (Click me)')
+    self.logText = StringVar(self.master, 'Hello World! (Click me)')
+    self.progressNumbers = [IntVar(self.master, 100) for _ in self._featuresBars]
 
-  def create_widgets(self):
+  def create_widgets(self, color):
     self.settingsView = None
+    self.progressBars = []
+    self.txtProgress = Text(self, font=('Consolas', 8), background=color, padx=10, pady=10)
+    self.txtProgress.config(state='disabled')
+    
+    self.txtProgress.place(relx=0.52, rely=0.03, relheight=0.94, relwidth=0.42)
 
-    settings = { 'textvariable' : self.hi, 'command': self.openSettingsView, 'width': 20, 'height': 2}
+    self.scrollbar = Scrollbar(self, orient=VERTICAL, command=self.txtProgress.yview)
+    self.scrollbar.place(relx=0.95, rely=0.03, relheight=0.94)
+    self.txtProgress.config(yscrollcommand=self.scrollbar.set)
 
-    self.btnHi = Button(self, **settings)
-    self.btnHi.place(x=10, y=10)
+    for index,t_label in enumerate(self._featuresBars):
+      Label(self, text=f'{t_label} ({self.progressNumbers[index].get()}%):', anchor='w', bg=color).place(relx=0.02, rely=0.1+(0.26*index), relwidth=0.46, relheight=0.04)
+      self.progressBars.append(Progressbar(self, maximum=100.1))
+      self.progressBars[index].step(self.progressNumbers[index].get())
+      self.progressBars[index].place(relx=0.02, rely=0.16+(0.26*index), relwidth=0.46, relheight=0.08)
 
-    self.btnQuit = Button(self, text='Quit', fg='red', command=self.destroy_view)
-    self.btnQuit.place(relx=0.9, y=150)
-
-  def openSettingsView(self):
-    if not self.settingsView:
-      self.settingsView = SettingsView(self)
-  
-  def destroy_view(self):
-    result = MessageBox.askokcancel('Salir', '¿Desea salir de la aplicación sin guardar?')
-    if result:
-      super().destroy()
-      self.master.destroy()

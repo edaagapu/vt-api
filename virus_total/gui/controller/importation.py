@@ -1,7 +1,17 @@
+from views import SettingsView
+from tkinter import filedialog as FileDialog
+import webbrowser
+
 class ImportationController:
-  def say_hi(self):
-    self.hi.set('Hola!')
-    print('Hello world!')
+  def openSettingsView(self):
+    if not SettingsView.in_use:
+      SettingsView(self)
+
+  def importFile(self):
+    return FileDialog.askopenfilename(
+      title='Abrir un fichero',
+      filetypes=(('Archivos JSON', '*.json'), ('Archivos Excel (2007-*)', '*.xlsx'), ('Archivos CSV', '*.csv'))
+    )
   
-  def hello(self):
-    pass
+  def openHelpHyperlink(self):
+    webbrowser.open('https://www.google.com/')
