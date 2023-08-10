@@ -1,11 +1,14 @@
 from tkinter import Tk, Menu, messagebox as MessageBox
 from components import ApplicationFrame, ImportationFrame
 from os.path import join, dirname, abspath
+from views import SettingsView
 
 _ICON_FILE = join(dirname(abspath(__file__)), 'icons\main.ico')
 
 
-class Main(Tk):
+class App(Tk):
+  in_work = False
+
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.create_menubar()
@@ -13,7 +16,6 @@ class Main(Tk):
     self.title('Cerberus')
     self.create_widgets()
     self.iconbitmap(_ICON_FILE)
-    self.config(menu=self.menubar)
 
   def create_menubar(self):
     menu_items = {
@@ -44,11 +46,15 @@ class Main(Tk):
     self.impFrame.config(**feature)
 
   def destroy(self):
-    result = MessageBox.askokcancel('Salir', '¿Desea salir de la aplicación sin guardar?')
+    result = True
+    while (SettingsView.in_use):
+      self.impFrame.destroy()
+    if self.__class__.in_work:
+      result = MessageBox.askokcancel('Salir', '¿Desea salir de la aplicación sin terminar de ejecutar el proceso?')
     if result:
       super().destroy()
 
 
 if __name__ == '__main__':
-  app = Main()
+  app = App()
   app.mainloop()

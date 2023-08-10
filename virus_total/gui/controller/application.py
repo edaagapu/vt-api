@@ -12,3 +12,6 @@ class ApplicationController:
   
   def get_text(self):
     return self.txtProgress.get(1.0, 'end-1c')
+  
+  def run(self):
+    pass

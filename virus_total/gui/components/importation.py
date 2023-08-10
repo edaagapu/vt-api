@@ -14,6 +14,7 @@ class ImportationFrame(Frame, ImportationController):
     self.create_vars()
     self.create_widgets(color)
     self.place(relwidth=0.98, relheight=0.23, relx=0.01, rely=0.76)
+    self.master.geometry('+0+0')
 
   def create_vars(self):
     self.settingsView = None
