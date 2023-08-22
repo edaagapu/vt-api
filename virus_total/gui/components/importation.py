@@ -14,7 +14,7 @@ class ImportationController:
       except Exception as error:
         MessageBox.showerror('Error', error)
 
-  def importFile(self):
+  def import_file(self):
     return FileDialog.askopenfilename(
       title='Abrir un fichero',
       filetypes=(('Archivos JSON', '*.json'), ('Archivos Excel (2007-*)', '*.xlsx'), ('Archivos CSV', '*.csv'))
@@ -44,7 +44,7 @@ class ImportationFrame(Frame, ImportationController):
     self.button_style = Style()
     self.button_style.configure('IF.TButton', color=color, font = ('Calibri', 10), borderwidth='1', )
     features_buttons = (
-      { 'icon': 'import.png', 'text' : 'Importar Archivo', 'command': self.importFile},
+      { 'icon': 'import.png', 'text' : 'Importar Archivo', 'command': self.import_file},
       { 'icon': 'settings.png', 'text' : 'Configuración', 'command': self.openSettingsView},
       { 'icon': 'info.png', 'text' : 'Manual', 'command': self.openHelpHyperlink},
     )
@@ -58,6 +58,6 @@ class ImportationFrame(Frame, ImportationController):
     self.buttons.append(Button(self, image=self.images[-1], compound='left', text='Salir', style='IF.TButton', command=self.master.destroy))
     self.buttons[-1].place(relx=0.8, rely=0.65, relheight=0.3, relwidth=0.15)
 
-  def importFile(self):
-    filepath = super().importFile()
+  def import_file(self):
+    filepath = super().import_file()
     self.master.set_path(filepath)

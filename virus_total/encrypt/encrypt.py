@@ -1,7 +1,7 @@
 import jwt
 
 class JWTEncrypt:
-  def __init__(self):
+  def __init__(self, **kwargs):
     pass
 
   def __encryptJWT__(self, data_dict, key, algorithm='HS256'):
@@ -33,3 +33,33 @@ class JWTEncrypt:
       number = ord(c)
       r_key += f'{number:03d}'
     return r_key
+  
+
+  def load_key(self, fp_key='.key'):
+    try:
+      with open(fp_key, 'r') as f_key:
+        return self.get_key(f_key.read())
+    except FileNotFoundError:
+      return 'nHtoFqfAtYjSGG6QawGR9HEBrvepmFbNf4mx0jNL21c1k23z95'
+
+
+  def save_key(self, key, fp_key='.key'):
+    with open(fp_key, 'w') as f_key:
+      f_key.write(self.encrypt.get_reverse_key(key))
+
+
+  def save_settings(self, key, settings, fp_settings='.settings'):
+    with open(fp_settings, 'w') as f_settings:
+      if not self._settings:
+        self._settings = {}
+      encoded = self.encrypt(data_dict=settings, key=key)
+      f_settings.write(encoded)
+
+
+  def load_settings(self, key, fp_settings='.settings'):
+    try:
+      with open(fp_settings, 'r') as f_settings:
+        token = f_settings.read()
+      return self.decrypt(token=token, key=key)
+    except FileNotFoundError:
+      return {'export_path': 'C:\\'}

@@ -51,7 +51,7 @@ class ApplicationFrame(Frame, ApplicationController):
     self.runButton = Button(self, text='Ejecutar', command=self.master.run_api, relief='solid', borderwidth='1', background=color)
     self.runButton.place(relx=0.02, rely=0.85, relheight=0.08, relwidth=0.12)
 
-    self.lbl_path = Label(self, textvariable=self.path_text, relief='solid', borderwidth='1', background=color)
+    self.lbl_path = Label(self, textvariable=self.path_text, background=color)
     self.lbl_path.bind('<Configure>', lambda e: self.lbl_path.config(wraplength=self.lbl_path.winfo_width()))
     self.lbl_path.place(relx=0.16, rely=0.8, relheight=0.18, relwidth=0.34)
     

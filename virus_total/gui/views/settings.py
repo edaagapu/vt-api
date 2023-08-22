@@ -7,36 +7,6 @@ from encrypt import JWTEncrypt
 _ICON_FILEPATH = join(dirname(dirname(abspath(__file__))), 'icons')
 
 class SettingsController:
-  def load_key(self, fp_key='.key'):
-    try:
-      with open(fp_key, 'r') as f_key:
-        self._key = self.encrypt.get_key(f_key.read())
-    except FileNotFoundError:
-      self._key = 'nHtoFqfAtYjSGG6QawGR9HEBrvepmFbNf4mx0jNL21c1k23z95'
-
-
-  def save_key(self, fp_key='.key'):
-    with open(fp_key, 'w') as f_key:
-      f_key.write(self.encrypt.get_reverse_key(self._key))
-
-
-  def save_settings(self, fp_settings='.settings'):
-    with open(fp_settings, 'w') as f_settings:
-      if not self._settings:
-        self._settings = {}
-      encoded = self.encrypt.encrypt(data_dict=self._settings, key=self._key)
-      f_settings.write(encoded)
-
-
-  def load_settings(self, fp_settings='.settings'):
-    try:
-      with open(fp_settings, 'r') as f_settings:
-        token = f_settings.read()
-      self._settings = self.encrypt.decrypt(token=token, key=self._key)
-    except FileNotFoundError:
-      self._settings = {'export_path': 'C:\\'}
-
-
   def change_export_path(self):
     self._settings['export_path'] = self._export_path.get()
     self.__class__.has_change = True
@@ -80,14 +50,12 @@ class SettingsView(Toplevel, SettingsController):
     
 
   def create_vars(self):
-    self._settings = None
-    self._key = None
+    self._key = self.encrypt.load_key()
+    self._settings = self.encrypt.load_settings(self._key)
     self.icons = [PhotoImage(file=self.get_icon('logout.png').encode('unicode_escape')).subsample(25,25)]
     self.listInfo = []
     self.intButtons = []
     self.scrollbars = []
-    self.load_key()
-    self.load_settings()
     self._apps = ('vt', 'ibm')
     self._export_path = StringVar(value=self._settings.get('export_path'))
     
