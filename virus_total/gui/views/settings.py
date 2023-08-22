@@ -1,10 +1,61 @@
 from tkinter import Toplevel, PhotoImage, Listbox, StringVar, filedialog as FileDialog, messagebox as MessageBox
 from tkinter.ttk import Button, Style, Label, Scrollbar
-from controller import SettingsController
 from os.path import join, dirname, abspath
 from .c_dialog import CustomDialog
+from encrypt import JWTEncrypt
 
 _ICON_FILEPATH = join(dirname(dirname(abspath(__file__))), 'icons')
+
+class SettingsController:
+  def load_key(self, fp_key='.key'):
+    try:
+      with open(fp_key, 'r') as f_key:
+        self._key = self.encrypt.get_key(f_key.read())
+    except FileNotFoundError:
+      self._key = 'nHtoFqfAtYjSGG6QawGR9HEBrvepmFbNf4mx0jNL21c1k23z95'
+
+
+  def save_key(self, fp_key='.key'):
+    with open(fp_key, 'w') as f_key:
+      f_key.write(self.encrypt.get_reverse_key(self._key))
+
+
+  def save_settings(self, fp_settings='.settings'):
+    with open(fp_settings, 'w') as f_settings:
+      if not self._settings:
+        self._settings = {}
+      encoded = self.encrypt.encrypt(data_dict=self._settings, key=self._key)
+      f_settings.write(encoded)
+
+
+  def load_settings(self, fp_settings='.settings'):
+    try:
+      with open(fp_settings, 'r') as f_settings:
+        token = f_settings.read()
+      self._settings = self.encrypt.decrypt(token=token, key=self._key)
+    except FileNotFoundError:
+      self._settings = {'export_path': 'C:\\'}
+
+
+  def change_export_path(self):
+    self._settings['export_path'] = self._export_path.get()
+    self.__class__.has_change = True
+
+
+  def __add_key__(self, key, app):
+    token = self.encrypt.encrypt(data_dict=key, key=self._key)
+    if not self._settings.get(f'{app}_keys', None):
+      self._settings[f'{app}_keys'] = []
+    self._settings[f'{app}_keys'].append(token)
+    self.__class__.has_change = True
+    return token
+
+
+  def __remove_key__(self, index, app):
+    r_value = self._settings[f'{app}_keys'][index]
+    self._settings[f'{app}_keys'].remove(r_value)
+    self.__class__.has_change = True
+
 
 class SettingsView(Toplevel, SettingsController):
   in_use = False
@@ -12,6 +63,9 @@ class SettingsView(Toplevel, SettingsController):
   get_icon = lambda self, icon: join(_ICON_FILEPATH, icon)
 
   def __init__(self, *args, **kwargs):
+    self.encrypt = kwargs.pop('encrypt', None)
+    if not self.encrypt:
+      self.encrypt = JWTEncrypt()
     super().__init__(*args, **kwargs)
     self.title('Configuración')
     self.config(width=500, height=500)

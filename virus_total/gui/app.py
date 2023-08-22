@@ -1,12 +1,20 @@
 from tkinter import Tk, Menu, messagebox as MessageBox
-from components import ApplicationFrame, ImportationFrame
+from .components import ApplicationFrame, ImportationFrame
+from .views import SettingsView
 from os.path import join, dirname, abspath
-from views import SettingsView
+
 
 _ICON_FILE = join(dirname(abspath(__file__)), 'icons\main.ico')
 
+class AppController:
+  def set_path(self, path):
+    self.appFrame.path_text.set(f'El archivo seleccionado esta en la ruta: {path}')
 
-class App(Tk):
+  def run_api(self):
+    pass
+
+
+class App(Tk, AppController):
   in_work = False
 
   def __init__(self, *args, **kwargs):

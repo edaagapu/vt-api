@@ -1,9 +1,28 @@
-from tkinter import Frame, PhotoImage
-from controller import ImportationController
+from tkinter import Frame, PhotoImage, filedialog as FileDialog, messagebox as MessageBox
 from tkinter.ttk import Button, Style
 from os.path import join, dirname, abspath
+from gui.views import SettingsView
+import webbrowser
 
 _ICON_PATH = join(dirname(dirname(abspath(__file__))), 'icons')
+
+class ImportationController:
+  def openSettingsView(self):
+    if not SettingsView.in_use:
+      try:
+        SettingsView(self)
+      except Exception as error:
+        MessageBox.showerror('Error', error)
+
+  def importFile(self):
+    return FileDialog.askopenfilename(
+      title='Abrir un fichero',
+      filetypes=(('Archivos JSON', '*.json'), ('Archivos Excel (2007-*)', '*.xlsx'), ('Archivos CSV', '*.csv'))
+    )
+  
+  def openHelpHyperlink(self):
+    webbrowser.open('https://www.google.com/')
+
 
 class ImportationFrame(Frame, ImportationController):
   create_icon = lambda self, image_name: self.images.append(PhotoImage(file=join(_ICON_PATH, image_name).encode('unicode_escape')).subsample(30,30))
@@ -39,4 +58,6 @@ class ImportationFrame(Frame, ImportationController):
     self.buttons.append(Button(self, image=self.images[-1], compound='left', text='Salir', style='IF.TButton', command=self.master.destroy))
     self.buttons[-1].place(relx=0.8, rely=0.65, relheight=0.3, relwidth=0.15)
 
-  
+  def importFile(self):
+    filepath = super().importFile()
+    self.master.set_path(filepath)

@@ -1,6 +1,20 @@
 from tkinter import Frame, StringVar, IntVar, Label, Text, Button
-from controller import ApplicationController
 from tkinter.ttk import Progressbar, Scrollbar
+
+class ApplicationController:
+  def set_text(self):
+    self.txtProgress.config(state='normal')
+    self.txtProgress.delete('1.0', 'end')
+    self.txtProgress.insert('1.0', self.progressText.get())
+    self.txtProgress.config(state='disabled')
+  
+  def append_text(self):
+    self.txtProgress.config(state='normal')
+    self.txtProgress.insert('end', self.progressText.get())
+    self.txtProgress.config(state='disabled')
+  
+  def get_text(self):
+    return self.txtProgress.get(1.0, 'end-1c')
 
 
 class ApplicationFrame(Frame, ApplicationController):
@@ -35,8 +49,9 @@ class ApplicationFrame(Frame, ApplicationController):
       self.progressBars[index].place(relx=0.02, rely=0.16+(0.26*index), relwidth=0.46, relheight=0.08)
     
     self.runButton = Button(self, text='Ejecutar', command=self.master.run_api, relief='solid', borderwidth='1', background=color)
-    self.runButton.place(x=20, rely=0.85, relheight=0.08, width=60)
+    self.runButton.place(relx=0.02, rely=0.85, relheight=0.08, relwidth=0.12)
 
-    self.lbl_path = Label(self, textvariable=self.path_text, relief='solid', borderwidth='1', background=color, wraplength=118)
-    self.lbl_path.place(x=95, rely=0.85, relheight=0.13, width=120)
+    self.lbl_path = Label(self, textvariable=self.path_text, relief='solid', borderwidth='1', background=color)
+    self.lbl_path.bind('<Configure>', lambda e: self.lbl_path.config(wraplength=self.lbl_path.winfo_width()))
+    self.lbl_path.place(relx=0.16, rely=0.8, relheight=0.18, relwidth=0.34)
     
