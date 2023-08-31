@@ -4,20 +4,20 @@ class JWTEncrypt:
   def __init__(self, **kwargs):
     pass
 
-  def __encryptJWT__(self, data_dict, key, algorithm='HS256'):
+  def __encrypt_jwt__(self, data_dict, key, algorithm='HS256'):
     return jwt.encode(data_dict, key, algorithm)
 
 
-  def __decryptJWT__(self, token, key, algorithms=['HS256']):
+  def __decrypt_jwt__(self, token, key, algorithms=['HS256']):
     return jwt.decode(token, key, algorithms)
 
 
   def encrypt(self, **kwargs):
-    return self.__encryptJWT__(**kwargs)
+    return self.__encrypt_jwt__(**kwargs)
 
 
   def decrypt(self, **kwargs):
-    return self.__decryptJWT__(**kwargs)
+    return self.__decrypt_jwt__(**kwargs)
 
 
   def get_key(self, r_key):
@@ -50,8 +50,6 @@ class JWTEncrypt:
 
   def save_settings(self, key, settings, fp_settings='.settings'):
     with open(fp_settings, 'w') as f_settings:
-      if not self._settings:
-        self._settings = {}
       encoded = self.encrypt(data_dict=settings, key=key)
       f_settings.write(encoded)
 

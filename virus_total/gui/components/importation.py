@@ -7,7 +7,7 @@ import webbrowser
 _ICON_PATH = join(dirname(dirname(abspath(__file__))), 'icons')
 
 class ImportationController:
-  def openSettingsView(self):
+  def open_settings_view(self):
     if not SettingsView.in_use:
       try:
         SettingsView(self)
@@ -20,7 +20,7 @@ class ImportationController:
       filetypes=(('Archivos JSON', '*.json'), ('Archivos Excel (2007-*)', '*.xlsx'), ('Archivos CSV', '*.csv'))
     )
   
-  def openHelpHyperlink(self):
+  def open_help_hyperlink(self):
     webbrowser.open('https://www.google.com/')
 
 
@@ -45,8 +45,8 @@ class ImportationFrame(Frame, ImportationController):
     self.button_style.configure('IF.TButton', color=color, font = ('Calibri', 10), borderwidth='1', )
     features_buttons = (
       { 'icon': 'import.png', 'text' : 'Importar Archivo', 'command': self.import_file},
-      { 'icon': 'settings.png', 'text' : 'Configuración', 'command': self.openSettingsView},
-      { 'icon': 'info.png', 'text' : 'Manual', 'command': self.openHelpHyperlink},
+      { 'icon': 'settings.png', 'text' : 'Configuración', 'command': self.open_settings_view},
+      { 'icon': 'info.png', 'text' : 'Manual', 'command': self.open_help_hyperlink},
     )
     
     for index, feature in enumerate(features_buttons):

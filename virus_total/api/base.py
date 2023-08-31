@@ -36,11 +36,24 @@ class GeneralAPI:
       return 'sha1'
     elif re.fullmatch(_PATTERN_HASH_SHA256, hash):
       return 'sha256'
-    else:
-      return 'unknown'
-  
+    return None
 
-  def __getresponse__(self, short_url, headers=None, **kwargs):
+  def __getkwargs__(self, credentials):
+    return {}
+
+  def consult_result(self, value:str, credentials):
+    kwargs = self.__getkwargs__(credentials)
+    if self.__isipv4__(value):
+      return self.get_ip_information(value, **kwargs)
+    elif self.__isdns__(value):
+      return self.get_dns_information(value, **kwargs)
+    elif self.__isurl__(value):
+      return self.get_url_information(value, **kwargs)
+    elif self.__ishash__(value):
+      return self.get_hash_information(value, **kwargs)
+
+  def __getresponse__(self, short_url, **kwargs):
+    headers = kwargs.pop('headers', None)
     full_url = '{}{}'.format(self._url, short_url) if short_url.startswith('/') else '{}/{}'.format(self._url, short_url) 
     if headers:
       response = requests.get(full_url, headers=headers, **kwargs)
