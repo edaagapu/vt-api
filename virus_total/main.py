@@ -22,7 +22,8 @@
 # importing only those functions
 # which are needed
 from gui import App
+from facade import ExcelFacade
 
 if __name__ == '__main__':
-  app = App()
+  app = App(facade=ExcelFacade())
   app.mainloop()

@@ -1,21 +1,24 @@
-from base import Facade
+from .base import Facade
 import json
+from datetime import datetime
+from os.path import join
 
 class JSONFacade(Facade):
-  def __init__(self):
-    super().__init__()
-    
-
   def open(self):
-    super().open('Abrir archivo JSON', (('Archivo JSON', '*.json'), ))
-    with open(self.path,) as json_file:
-      self.src_file = json.load(json_file)
+    return super().open('Abrir archivo JSON', (('Archivo JSON', '*.json'), ))
 
 
-  def save(self, same_route, initialdir, **kwargs):
-    super().save(same_route, 'Guardar fichero', '.json', initialdir=initialdir)
+  def load(self, path):
+    return open(path)
+
+
+  def res_file(self, **kwargs):
+    return super().res_file('Guardar fichero', '.json', **kwargs)
+
+
+  def save(self, path, **kwargs):
     data = kwargs.get('data', {})
-    with open(self.path, 'w') as json_file:
+    with open(join(path, datetime.now().strftime('%d%m%Y_%H%M%S.json')), 'w') as json_file:
       json_file.write(json.dumps(data))
 
 

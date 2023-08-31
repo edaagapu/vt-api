@@ -1,21 +1,26 @@
 from openpyxl import load_workbook, Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.formatting.rule import ColorScaleRule
-from base import Facade
+from .base import Facade
+from datetime import datetime
+from os.path import join
 
 class ExcelFacade(Facade):
-  def __init__(self):
-    super().__init__()
-    
-
   def open(self):
-    super().open('Abrir hoja de calculo', (('Documento de Excel (2007-posterior)', '*.xlsx'), ('Documento de Excel 2003', '*.xls')))
-    self.src_file = load_workbook(self.path)
+    return super().open('Abrir hoja de calculo', (('Documento de Excel (2007-posterior)', '*.xlsx'), ('Documento de Excel 2003', '*.xls')))
 
 
-  def save(self, same_route, initialdir, **kwargs):
-    super().save(same_route, 'Guardar fichero', '.xlsx', initialdir=initialdir)
-    self.src_file.save(self.path)
+  def load(self, path):
+    return load_workbook(path)
+
+
+  def res_file(self, **kwargs):
+    return super().res_file('Guardar hoja de calculo', '.xlsx', **kwargs)
+
+
+  def save(self, path, **kwargs):
+    wb = kwargs.get('data', None)
+    wb.save(join(path, datetime.now().strftime('%d%m%Y_%H%M%S.xlsx')))
 
 
   def custom_process(self, headers, data, **kwargs):
@@ -29,7 +34,8 @@ class ExcelFacade(Facade):
         cell.fill = PatternFill(fill_type='solid', start_color="FFF17C", end_color="FFF17C")
     
     sheetname = kwargs.get('sheetname', 'Hoja')
-    ws = self.src_file[sheetname] if sheetname in self.src_file.sheetnames else self.src_file.create_sheet(sheetname)
+    wb = kwargs.get('wb', Workbook())
+    ws = wb[sheetname] if sheetname in wb.sheetnames else wb.create_sheet(sheetname)
 
     ws.append(headers)
 
@@ -48,14 +54,14 @@ class ExcelFacade(Facade):
       'end_color': 'FFA2A2'
     }
 
-    rg = f'B2:B{ws.max_row}'
+    rg = f'C2:C{ws.max_row}'
     ws.conditional_formatting.add(rg, ColorScaleRule(**rules))
 
     
-    for cell in list(ws['B']):
+    for cell in list(ws['C']):
       __format_cell__(cell)
     
-    return None
+    return wb
     
 
   

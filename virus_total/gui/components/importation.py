@@ -14,11 +14,10 @@ class ImportationController:
       except Exception as error:
         MessageBox.showerror('Error', error)
 
+
   def import_file(self):
-    return FileDialog.askopenfilename(
-      title='Abrir un fichero',
-      filetypes=(('Archivos JSON', '*.json'), ('Archivos Excel (2007-*)', '*.xlsx'), ('Archivos CSV', '*.csv'))
-    )
+    return self.facade.open()
+
   
   def open_help_hyperlink(self):
     webbrowser.open('https://www.google.com/')
@@ -27,7 +26,8 @@ class ImportationController:
 class ImportationFrame(Frame, ImportationController):
   create_icon = lambda self, image_name: self.images.append(PhotoImage(file=join(_ICON_PATH, image_name).encode('unicode_escape')).subsample(30,30))
 
-  def __init__(self, master=None, color='#FFFFFF', *args, **kwargs):
+  def __init__(self, master=None, color='#FFFFFF', facade=None, *args, **kwargs):
+    self.facade = facade
     super().__init__(master, *args, **kwargs)
     self.master = master
     self.create_vars()

@@ -4,14 +4,14 @@ from .views import SettingsView
 from os.path import join, dirname, abspath
 from encrypt import JWTEncrypt
 from api import *
-import datetime, json
 from openpyxl import load_workbook, Workbook
+from facade import JSONFacade, ExcelFacade
 
 _ICON_FILE = join(dirname(abspath(__file__)), 'icons\main.ico')
 
 class AppController:
   def set_path(self, path):
-    self.appFrame.path_text.set(path)
+    self.app_frame.path_text.set(path)
 
   def select_provider(self, provider):
     if provider == 'IBM':
@@ -20,7 +20,7 @@ class AppController:
       return VTAPI()
     
   def import_data(self):
-    wb = load_workbook(self.appFrame.path_text.get())
+    wb = self.facade.load(self.app_frame.path_text.get())
     ws = wb.active
     return list(map(lambda cell: cell.value, ws['A']))
   
@@ -70,7 +70,6 @@ class AppController:
     results = []
     values = [[r_value, False] for r_value in r_values]
     for index in range(len(values)):
-      print(values, '\n', '*'*50)
       if not values[index][1]:
         try:
           data_resp = provider.consult_result(values[index][0], provider_key).json()
@@ -87,7 +86,7 @@ class AppController:
           categories = None
           if 'popular_threat_classification' in res.keys():
             label = res.get('popular_threat_classification').get('suggested_threat_label')
-            # categories = ','.join([category.get('value') for category in res.get('popular_threat_classification').get('popular_threat_category')])
+            categories = ','.join([category.get('value') for category in res.get('popular_threat_classification').get('popular_threat_category')])
 
           malicious_v = res.get('last_analysis_stats').get('malicious')
           total_v = (malicious_v + res.get('last_analysis_stats').get('undetected'))
@@ -95,24 +94,24 @@ class AppController:
           results.append({
             'valor': values[index][0],
             'tipo': f'hash - {original_type}',
+            'ranking': ranking,
             'hash_md5': res.get('md5'),
             'hash_sha1': res.get('sha1'),
             'hash_sha256': res.get('sha256'),
             'etiqueta': label,
             'categorias': categories,
-            'ranking': ranking,
             'comentario': ''
           })
         except Exception as error:
           results.append({
             'valor': values[index][0],
             'tipo': None,
+            'ranking': ranking,
             'hash_md5': None,
             'hash_sha1': None,
             'hash_sha256': None,
             'etiqueta': None,
             'categorias': None,
-            'ranking': None,
             'comentario': str(error)
           })
       else:
@@ -137,48 +136,39 @@ class AppController:
     encrypt = JWTEncrypt()
     key = encrypt.load_key()
     settings = encrypt.load_settings(key)
-
+    
     providers = list(map(lambda x: x.split('_')[0].upper(),filter(lambda x: 'key' in x and not 'vt' in x, settings.keys() )))
     # Fist should be VT
     providers.insert(0, 'VT')
     
-    full_path = join(settings.get('export_path'), datetime.datetime.now().strftime('%d%m%Y_%H%M%S.xlsx'))
+    filepath = settings.get('export_path')
 
     wb = Workbook()
     ws = wb.get_sheet_by_name('Sheet')
     wb.remove(ws)
     values = self.import_data()
-    sheetnames = ['Original'] + providers
-    for sheetname in sheetnames:
-      wb.create_sheet(sheetname)
     
     cr_values = self.classify(values)
-    ws = wb.get_sheet_by_name('Original')
+    ws = wb.create_sheet('Original')
     for value in cr_values:
       ws.append(value)
 
     c_values = self.classify_to_dict(cr_values, True)
     hash_values = c_values.pop('hash', None)
-    # rest_values = c_values.pop('hash', None)
     
     for provider in providers:
       provider_keys = settings.get(f'{provider.lower()}_keys')
-      ws = wb.get_sheet_by_name(provider)
       api = self.select_provider(provider)
       dcy_pk = encrypt.decrypt(key=key, token=provider_keys[0])
-      print(self.results_hash(hash_values, api, dcy_pk))
-
-
-        
-      
-      # ws['A1'] = 'Hello'
-    wb.save(full_path)
+      data = self.facade.process_data(self.results_hash(hash_values, api, dcy_pk), sheetname=provider, wb=wb)
+      self.facade.save(filepath, data=data)
  
 class App(Tk, AppController):
   in_work = False
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, facade=ExcelFacade(), *args, **kwargs):
     super().__init__(*args, **kwargs)
+    self.facade = facade
     self.title('Cerberus')
     self.create_widgets()
     self.create_menubar()
@@ -188,7 +178,7 @@ class App(Tk, AppController):
 
   def create_menubar(self):
     menu_items = {
-      'Archivo': [('Importar archivo', self.impFrame.import_file), '/', ('Salir', self.destroy)],
+      'Archivo': [('Importar archivo', self.imp_frame.import_file), '/', ('Salir', self.destroy)],
       'Configuración': [('Propiedades', self.run_api)],
       'Ayuda': ['Ayuda', '/', 'Acerca de']
     }
@@ -209,21 +199,16 @@ class App(Tk, AppController):
 
   def create_widgets(self):
     feature = {'bg': '#E9E9E9', 'bd': 1, 'relief': 'solid'}
-    self.appFrame = ApplicationFrame(self, color=feature.get('bg'))
-    self.impFrame = ImportationFrame(self, color=feature.get('bg'))
-    self.appFrame.config(**feature)
-    self.impFrame.config(**feature)
+    self.app_frame = ApplicationFrame(self, color=feature.get('bg'))
+    self.imp_frame = ImportationFrame(self, color=feature.get('bg'), facade=self.facade)
+    self.app_frame.config(**feature)
+    self.imp_frame.config(**feature)
 
   def destroy(self):
     result = True
     while (SettingsView.in_use):
-      self.impFrame.destroy()
+      self.imp_frame.destroy()
     if self.__class__.in_work:
       result = MessageBox.askokcancel('Salir', '¿Desea salir de la aplicación sin terminar de ejecutar el proceso?')
     if result:
       super().destroy()
-
-
-if __name__ == '__main__':
-  app = App()
-  app.mainloop()

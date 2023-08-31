@@ -138,11 +138,11 @@ class SettingsView(Toplevel, SettingsController):
     if self.__class__.has_change:
       result = MessageBox.askyesno('Salir', '¿Desea guardar los cambios que realizo en la configuración?')
       if result:
-        self.save_key()
-        self.save_settings()
+        self.encrypt.save_key(self._key)
+        self.encrypt.save_settings(self._key, self._settings)
       else:
-        self.load_key()
-        self.load_settings()
+        self.encrypt.load_key()
+        self.encrypt.load_settings()
     self.__class__.in_use = False
     self.__class__.has_change = False
     super().destroy()
